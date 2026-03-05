@@ -1,0 +1,17 @@
+parameters:
+    app.jwt_secret: '%env(JWT_SECRET)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Kernel.php'
+
+    PDO:
+        factory: [App\Infrastructure\Persistence\PdoFactory, create]
+
+    App\Domain\User\UserRepositoryInterface: '@App\Infrastructure\Persistence\PostgresUserRepository'
