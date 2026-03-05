@@ -1,0 +1,44 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: symfony_api
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: 1
+      APP_SECRET: change_me
+      DATABASE_URL: pgsql://app:app@postgres:5432/app?serverVersion=17&charset=utf8
+      JWT_SECRET: super_secret_jwt_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    command: >
+      sh -c "composer install --no-interaction --prefer-dist
+      && php -r '$pdo = new PDO(\"pgsql:host=postgres;port=5432;dbname=app\", \"app\", \"app\"); $sql = file_get_contents(\"migrations/001_init.sql\"); $pdo->exec($sql);'
+      && php -S 0.0.0.0:8000 -t public"
+
+  postgres:
+    image: postgres:17
+    container_name: symfony_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pg_data:

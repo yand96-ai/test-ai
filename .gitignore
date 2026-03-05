@@ -1,0 +1,8 @@
+/.env.local
+/.env.*.local
+/var/
+/vendor/
+###> symfony/framework-bundle ###
+/.phpunit.cache/
+/public/bundles/
+###< symfony/framework-bundle ###
